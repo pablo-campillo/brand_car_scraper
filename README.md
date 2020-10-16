@@ -12,3 +12,20 @@ The tool is developed in the context of a task for the 'Tipología y ciclo de vi
 # Instalation
 
 # Usage
+
+# Set up dev environment
+
+Create a python virtual environment:
+```bash
+$ python3 -m venv <env_directory> python=3.8
+```
+
+Activate the environment:
+```bash
+$ source <env_directory>/bin/activate
+```
+
+Install library (and their dependencies) as reference from the project directory:
+```bash
+$ python setup.py develop
+```

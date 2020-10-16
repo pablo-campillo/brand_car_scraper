@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+
+from brand_car_scraper.main import car_scraper
+
+
+def scrap():
+    car_scraper()
+
+
+if __name__ == '__main__':
+    scrap()
