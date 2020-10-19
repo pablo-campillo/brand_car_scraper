@@ -1,10 +1,38 @@
 #!/usr/bin/env python3
 
+import click
 from brand_car_scraper.main import car_scraper
 
 
-def scrap():
-    car_scraper()
+@click.command()
+@click.argument('output_file', type=click.Path(exists=False))
+@click.option('--fp', type=click.INT, default=1, help='First page to be parsed. Default value is 1.')
+@click.option('--tp', type=click.INT, default=None, help='Last page to be parsed, i.e. until the last page.')
+def scrap(output_file, fp=1, tp=None):
+    """This tool scraps list of second car ads at https://www.coches.net/segunda-mano/?pg=<page_number> where
+    <page_number is an integer greater or equal than 1.
+
+    If no OPTIONS are provided all the pages will be parsed.
+
+    OUTPUT_FILE a path where the csv file will be stored.
+
+    \b
+    Examples:
+        - For scraping from page 1 to the end:
+            $ scrap out.csv
+        - For scraping from page 1 to 10:
+            $ scrap --tp 10 out.csv
+        - For scraping from page 5 to 10:
+            $ scrap -fp 5 -tp 10 out.csv
+        - For scraping from page 5 to the end:
+            $ scrap -fp 5 out.csv
+
+    \b
+    AUTHORS:
+        - Pedro Uceda Martinez\b
+        - Pablo Campillo Sánchez
+    """
+    car_scraper(output_file, fp, tp)
 
 
 if __name__ == '__main__':
