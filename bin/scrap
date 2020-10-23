@@ -8,7 +8,8 @@ from brand_car_scraper.main import car_scraper
 @click.argument('output_file', type=click.Path(exists=False))
 @click.option('--fp', type=click.INT, default=1, help='First page to be parsed. Default value is 1.')
 @click.option('--tp', type=click.INT, default=None, help='Last page to be parsed, i.e. until the last page.')
-def scrap(output_file, fp=1, tp=None):
+@click.option('--region', type=click.STRING, default="madrid", help='Region to be parsed e.g. madrid.')
+def scrap(output_file, fp=1, tp=None, region="madrid"):
     """This tool scraps list of second car ads at https://www.coches.net/segunda-mano/?pg=<page_number> where
     <page_number is an integer greater or equal than 1.
 
@@ -18,21 +19,23 @@ def scrap(output_file, fp=1, tp=None):
 
     \b
     Examples:
-        - For scraping from page 1 to the end:
+        - For scraping from page 1 to the end, region madrid:
             $ scrap out.csv
-        - For scraping from page 1 to 10:
+        - For scraping from page 1 to 10, region madrid:
             $ scrap --tp 10 out.csv
-        - For scraping from page 5 to 10:
+        - For scraping from page 5 to 10, region madrid:
             $ scrap -fp 5 -tp 10 out.csv
-        - For scraping from page 5 to the end:
+        - For scraping from page 5, region madrid:
             $ scrap -fp 5 out.csv
+        - For scraping from page 5 to 10, region murcia:
+            $ scrap -fp 5 -tp 10 --region murcia out.csv
 
     \b
     AUTHORS:
         - Pedro Uceda Martinez\b
         - Pablo Campillo Sánchez
     """
-    car_scraper(output_file, fp, tp)
+    car_scraper(output_file, fp, tp, region)
 
 
 if __name__ == '__main__':
