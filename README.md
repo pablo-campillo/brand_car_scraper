@@ -1,5 +1,5 @@
 # Introduction
-A scraper tool that aims at gathering features and pictures of vehicles from www.coches.net in order to develop AI  models related with the given domain such as a brand model classifier, among others.
+A scraper tool that aims at gathering features and pictures of vehicles from www.milanuncios.com in order to develop AI  models related with the given domain such as a brand model classifier, among others.
 
 The tool is developed in the context of a task for the 'Tipología y ciclo de vida de los datos' subject of the Data Science Master at UOC Univeristy.
 
@@ -21,9 +21,7 @@ $ python setup.py install
 ```bash
 Usage: scrap [OPTIONS] OUTPUT_FILE
 
-  This tool scraps list of second car ads at https://www.coches.net/segunda-
-  mano/?pg=<page_number> where <page_number is an integer greater or equal
-  than 1.
+  This tool scraps list of second car ads on https://www.milanuncios.com/coches-de-segunda-mano-en-<province>/?orden=relevance&fromSearch=<page_number> where <region> is the name of a region in Spain (madrid, andalucia, murcia) and <page_number> is an integer greater or equal than 1. By searching for cars by regions we are able to save where they are being sold.
 
   If no OPTIONS are provided all the pages will be parsed.
 
