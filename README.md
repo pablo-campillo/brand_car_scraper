@@ -28,23 +28,28 @@ Usage: scrap [OPTIONS] OUTPUT_FILE
   OUTPUT_FILE a path where the csv file will be stored.
 
   Examples:
-      - For scraping from page 1 to the end:
-          $ scrap out.csv
-      - For scraping from page 1 to 10:
-          $ scrap --tp 10 out.csv
-      - For scraping from page 5 to 10:
-          $ scrap -fp 5 -tp 10 out.csv
-      - For scraping from page 5 to the end:
-          $ scrap -fp 5 out.csv
+        - For scraping from page 1 to the end, region madrid:
+            $ scrap out.csv
+        - For scraping from page 1 to 10, region madrid:
+            $ scrap --tp 10 out.csv
+        - For scraping from page 5 to 10, region madrid:
+            $ scrap -fp 5 -tp 10 out.csv
+        - For scraping from page 5, region madrid:
+            $ scrap -fp 5 out.csv
+        - For scraping from page 5 to 10, region murcia:
+            $ scrap -fp 5 -tp 10 --region murcia out.csv
+
 
   AUTHORS:
       - Pedro Uceda Martinez
       - Pablo Campillo Sánchez
 
 Options:
-  --fp INTEGER  First page to be parsed. Default value is 1.
-  --tp INTEGER  Last page to be parsed, i.e. until the last page.
-  --help        Show this message and exit.
+  --fp INTEGER   First page to be parsed. Default value is 1.
+  --tp INTEGER   Last page to be parsed, i.e. until the last page.
+  --region TEXT  Region to be parsed e.g. madrid.
+  --help         Show this message and exit.
+  
 ```
 
 # Set up dev environment
