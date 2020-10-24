@@ -20,18 +20,37 @@ class Milanuncios_Scraper:
 
     def __init__(self):
         self.url = "https://www.milanuncios.com/anuncios-en-"
+        self.response_delay = 0.5
 
     def scrap(self, output_file, fp, tp, region):
         print("region is valid? " + str(self._validate_region(region)) )
         print(f"car_scraper(output_file{output_file!r}, fp={fp!r}, tp={tp!r})")
 
         for i in range(fp,tp):
-            url_to_request = self.url + region.lower() + "/?orden=date&fromSearch="+str(i)
-            print(url_to_request)
-            response = requests.get(self.url + region + "/?orden=date&fromSearch="+str(i))
-            print(response.content)
-            time.sleep(10)
+            print("Requesting page number " +  str(i))
 
+            initial_time = time.time();
+            
+            page_content = self._request_page_content(region, i)
+            
+            self.response_delay = time.time() - initial_time
+
+            cars = self._extract_cars_data(page_content)
+
+            print("the delay was " + str(self.response_delay))
+
+            time.sleep(10 * self.response_delay)
+
+    def _validate_region(self, region):
+        return region.lower() in self.regions
+
+    def _request_page_content(self, region, page_number):
+        url_to_request = self.url + region.lower() + "/?orden=date&fromSearch="+str(page_number)
+        response = requests.get(url_to_request + str(page_number))
+        print(response.content)
+        return response.content
+
+    def _extract_cars_data(self, page_content):
     #       TODO: Extract data. All the cars are within $('.ma-AdList')
     # 
     #       And, for each car:
@@ -50,9 +69,7 @@ class Milanuncios_Scraper:
     # 
     #
     #
-
-    def _validate_region(self, region):
-        return region.lower() in self.regions
+        return None
 
     @property
     def regions(self):
