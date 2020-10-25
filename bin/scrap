@@ -35,6 +35,7 @@ def scrap(output_file, fp=1, tp=None, region="madrid"):
         - Pedro Uceda Martinez\b
         - Pablo Campillo Sánchez
     """
+    click.secho(f"car_scraper({output_file}, {fp}, {tp}, {region})", fg='green')
     car_scraper(output_file, fp, tp, region)
 
 
