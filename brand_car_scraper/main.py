@@ -75,11 +75,16 @@ class MilanunciosScraper:
         article = soup.find('article', 'ma-AdCard')
         car_record = self._extract_cars_record(article)
         result.append(car_record)
+        
         return result
 
     def _extract_cars_record(self, article) -> dict:
-        ad_id = self._get_text(article, 'p', 'ma-AdCard-adId', default=None)
         ad_type = self._get_text(article, 'p', 'ma-AdCard-sellType', default=None)
+
+        if ad_type != "OFERTA":
+            return None
+
+        ad_id = self._get_text(article, 'p', 'ma-AdCard-adId', default=None)
         ad_time = self._get_text(article, 'p', 'ma-AdCard-time', default=None)
 
         ad_title = self._get_text(article, 'h3', 'ma-AdCard-bodyTitle', default=None)
