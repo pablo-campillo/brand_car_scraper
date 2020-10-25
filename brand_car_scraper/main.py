@@ -110,14 +110,15 @@ class MilanunciosScraper:
             car_record = self._extract_cars_record(article)
             result.append(car_record)
         
+
         return result
 
     def _extract_cars_record(self, article) -> dict:
         ad_type = self._get_text(article, 'p', 'ma-AdCard-sellType', default=None)
 
-        if ad_type != "OFERTA":
+        if ad_type.upper() != "OFERTA":
             return None
-
+        
         ad_id = self._get_text(article, 'p', 'ma-AdCard-adId', default=None)
         ad_time = self._get_text(article, 'p', 'ma-AdCard-time', default=None)
 
