@@ -1,10 +1,19 @@
-import requests
 from bs4 import BeautifulSoup
 import time
 import pandas as pd
 import click
+
+from pyvirtualdisplay import Display
+from selenium import webdriver
+from uuid import uuid4
 from datetime import datetime
 
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
 
 def car_scraper(output_file, fp, tp, region):
     milanuncios_scraper = MilanunciosScraper()
@@ -18,15 +27,18 @@ class MilanunciosScraper:
         - page is the number of page result to be requested
     """
 
-    RETRAY_NUMBER = 5 # if no page content is gather it request the same page again until retay_number times
     DELAY_RATIO = 10 # Number of times that it waits depending on the response time for the next requests
 
-    def __init__(self):
-        self.response_delay = 0.5
+    def __init__(self, executable_path = "brand_car_scraper/chromedriver", log_path="chromedriver.log"):
+        self._response_delay = 0.5
+        self._executable_path = executable_path
 
     def scrap(self, output_file, fp, tp, region):
         fp = 1 if not fp else fp
         tp = 1 if not tp else tp # TODO if tp is None tp should be equal to total number of pages
+
+        self._start_session()
+
         if not self._validate_region(region):
             click.secho(f"Not valid region name error: {region}", fg='red')
             click.secho(f"Valid region names: {self.regions}", fg='red')
@@ -41,27 +53,46 @@ class MilanunciosScraper:
                 dataset = pd.concat([dataset, pd.DataFrame(cars)])
                 dataset['region'] = region
 
-            time.sleep(self.DELAY_RATIO * self.response_delay)
-
         dataset.to_csv(output_file)
 
     def _validate_region(self, region):
         return region.lower() in self.regions
 
+    def _start_session(self):
+        """Internal function to start a virtual session"""
+        self.session = uuid4()
+        click.secho(f"Starting chrome session", fg='green')
+
+        display = Display(visible=1, size=(1024, 768))
+        display.start()
+
+        self.browser = webdriver.Chrome(self._executable_path)
+
+        self.browser.get("https://www.milanuncios.com/coches-de-segunda-mano-en-{region}/")
+
+        time.sleep(10)
+
+
     def _request_page_content(self, region, page_number):
         url = f"https://www.milanuncios.com/coches-de-segunda-mano-en-{region}/?fromSearch={page_number}&orden=date"
+        
+        initial_time = time.time()
 
-        req_counter = 1
-        page_content = None
-        while not page_content and req_counter <= self.RETRAY_NUMBER:
-            click.secho(f"Requesting page number {page_number}, try #{req_counter}", fg='green' if req_counter == 1 else 'orange')
-            initial_time = time.time();
-            response = requests.get(url)
-            self.response_delay = time.time() - initial_time
-            click.secho(f"The delay was {self.response_delay}")
-            page_content = response.content if response.status_code == 200 else None
-            req_counter += 1
-        return page_content
+        response = self.browser.get(url)
+
+        self.browser.find_element_by_tag_name('body').send_keys(Keys.END)            
+        
+        self.response_delay = time.time() - initial_time
+
+        time.sleep(self.DELAY_RATIO * self._response_delay)
+
+        click.secho(f"The delay was {self._response_delay}")
+
+        return self.browser.page_source
+
+    def _obtain_cookies(self):
+        return {c['name']:c['value'] for c in self._cookies}
+
 
     def _extract_all_cars_data(self, page_content: str) -> list:
         """Parses the page_content and returns a list of dict with car features
@@ -74,7 +105,7 @@ class MilanunciosScraper:
         
         
         articles = soup.find_all('article', 'ma-AdCard')
-
+        
         for article in articles:
             car_record = self._extract_cars_record(article)
             result.append(car_record)
