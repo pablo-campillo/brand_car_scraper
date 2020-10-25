@@ -71,10 +71,13 @@ class MilanunciosScraper:
         """
         result = []
         soup = BeautifulSoup(page_content, 'html.parser')
-        # TODO iterate over all articles
-        article = soup.find('article', 'ma-AdCard')
-        car_record = self._extract_cars_record(article)
-        result.append(car_record)
+        
+        
+        articles = soup.find_all('article', 'ma-AdCard')
+
+        for article in articles:
+            car_record = self._extract_cars_record(article)
+            result.append(car_record)
         
         return result
 
