@@ -81,7 +81,7 @@ class MilanunciosScraper:
         self.browser.quit()
 
     def _request_page_content(self, region, page_number):
-        url = f"https://www.milanuncios.com/coches-de-segunda-mano-en-{region}/?fromSearch={page_number}&orden=date&results=5"
+        url = f"https://www.milanuncios.com/coches-de-segunda-mano-en-{region}/?pagina={page_number}&orden=date&results=5"
         
         initial_time = time.time()
 
