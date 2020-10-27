@@ -27,7 +27,7 @@ class MilanunciosScraper:
         - page is the number of page result to be requested
     """
 
-    DELAY_RATIO = 30 # Number of times that it waits depending on the response time for the next requests
+    DELAY_RATIO = 10 # Number of times that it waits depending on the response time for the next requests
 
     def __init__(self, executable_path = "brand_car_scraper/chromedriver", log_path="chromedriver.log"):
         self._response_delay = 0.5
@@ -35,7 +35,7 @@ class MilanunciosScraper:
 
     def scrap(self, output_file, fp, tp, region):
         fp = 1 if not fp else fp
-        tp = 1 if not tp else tp # TODO if tp is None tp should be equal to total number of pages
+        tp = 1 if not tp else tp # TODO if tp is None tp shoucld be equal to total number of pages
 
         self._start_session()
 
@@ -77,7 +77,7 @@ class MilanunciosScraper:
 
     def _close_session(self):
         click.secho(f"Closing chrome session", fg='green')
-
+        time.sleep(10)
         self.browser.quit()
 
     def _request_page_content(self, region, page_number):
@@ -88,11 +88,12 @@ class MilanunciosScraper:
         self.browser.get(url)
         self._scroll(2)
 
-        self.response_delay = time.time() - initial_time
+        self._response_delay = time.time() - initial_time
 
         click.secho(f"The delay was {self._response_delay}")
 
-        
+        #time.sleep(self._response_delay*self.DELAY_RATIO) TODO revisar espaciado
+
         return self.browser.page_source
 
     def _scroll(self, timeout):
