@@ -27,7 +27,7 @@ class MilanunciosScraper:
         - page is the number of page result to be requested
     """
 
-    DELAY_RATIO = 10 # Number of times that it waits depending on the response time for the next requests
+    DELAY_RATIO = 30 # Number of times that it waits depending on the response time for the next requests
 
     def __init__(self, executable_path = "brand_car_scraper/chromedriver", log_path="chromedriver.log"):
         self._response_delay = 0.5
@@ -55,70 +55,93 @@ class MilanunciosScraper:
 
         dataset.to_csv(output_file)
 
+        self._close_session()
+
     def _validate_region(self, region):
         return region.lower() in self.regions
 
     def _start_session(self):
-        """Internal function to start a virtual session"""
         self.session = uuid4()
         click.secho(f"Starting chrome session", fg='green')
 
-        display = Display(visible=1, size=(1024, 768))
-        display.start()
+        options = Options()
+        options.add_argument('start-maximized')
+        options.add_argument('disable-infobars')
+        options.add_argument('--disable-extensions')
 
-        self.browser = webdriver.Chrome(self._executable_path)
+        self.browser = webdriver.Chrome(chrome_options = options, executable_path = self._executable_path)
 
         self.browser.get("https://www.milanuncios.com/coches-de-segunda-mano-en-{region}/")
 
-        time.sleep(10)
+        time.sleep(5)
 
+    def _close_session(self):
+        click.secho(f"Closing chrome session", fg='green')
+
+        time.sleep(20)
+
+        self.browser.quit()
 
     def _request_page_content(self, region, page_number):
-        url = f"https://www.milanuncios.com/coches-de-segunda-mano-en-{region}/?fromSearch={page_number}&orden=date"
+        url = f"https://www.milanuncios.com/coches-de-segunda-mano-en-{region}/?fromSearch={page_number}&orden=date&results=8"
         
         initial_time = time.time()
 
-        response = self.browser.get(url)
+        self.browser.get(url)
+        self._scroll(2)
 
-        self.browser.find_element_by_tag_name('body').send_keys(Keys.END)            
-        
         self.response_delay = time.time() - initial_time
-
-        time.sleep(self.DELAY_RATIO * self._response_delay)
 
         click.secho(f"The delay was {self._response_delay}")
 
+        
         return self.browser.page_source
 
-    def _obtain_cookies(self):
-        return {c['name']:c['value'] for c in self._cookies}
+    def _scroll(self, timeout):
+        scroll_pause_time = timeout
+
+        last_height = self.browser.execute_script("return document.body.scrollHeight")
+
+        while True:
+            self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(scroll_pause_time)
+
+            new_height = self.browser.execute_script("return document.body.scrollHeight")
+            if new_height == last_height:
+                break
+
+            last_height = new_height
 
 
     def _extract_all_cars_data(self, page_content: str) -> list:
         """Parses the page_content and returns a list of dict with car features
 
-        :param page_content: string with html content
+        :param page_content: list with extracted articles
         :return: ditc with f
         """
         result = []
+
         soup = BeautifulSoup(page_content, 'html.parser')
-        
-        
-        articles = soup.find_all('article', 'ma-AdCard')
-        
+
+        articles = soup.find_all('article', {'class' : 'ma-AdCard'})
+
         for article in articles:
             car_record = self._extract_cars_record(article)
+
+            if car_record == None:
+                continue
+            
             result.append(car_record)
         
-
         return result
 
     def _extract_cars_record(self, article) -> dict:
         ad_type = self._get_text(article, 'p', 'ma-AdCard-sellType', default=None)
-
+        
         if ad_type.upper() != "OFERTA":
             return None
-        
+
+
         ad_id = self._get_text(article, 'p', 'ma-AdCard-adId', default=None)
         ad_time = self._get_text(article, 'p', 'ma-AdCard-time', default=None)
 
