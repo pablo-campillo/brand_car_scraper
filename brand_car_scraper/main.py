@@ -78,12 +78,10 @@ class MilanunciosScraper:
     def _close_session(self):
         click.secho(f"Closing chrome session", fg='green')
 
-        time.sleep(20)
-
         self.browser.quit()
 
     def _request_page_content(self, region, page_number):
-        url = f"https://www.milanuncios.com/coches-de-segunda-mano-en-{region}/?fromSearch={page_number}&orden=date&results=8"
+        url = f"https://www.milanuncios.com/coches-de-segunda-mano-en-{region}/?fromSearch={page_number}&orden=date&results=5"
         
         initial_time = time.time()
 
@@ -124,7 +122,7 @@ class MilanunciosScraper:
         soup = BeautifulSoup(page_content, 'html.parser')
 
         articles = soup.find_all('article', {'class' : 'ma-AdCard'})
-
+        print(len(articles))
         for article in articles:
             car_record = self._extract_cars_record(article)
 
