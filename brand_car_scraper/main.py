@@ -21,7 +21,7 @@ def car_scraper(output_file, fp, tp, region):
 
 
 class MilanunciosScraper:
-    """ Class to scrap vehicle ads from https://www.milanuncios.com/coches-de-segunda-mano-en-{province}/?fromSearch={page}&orden=date
+    """ Class to scrap vehicle ads from https://www.milanuncios.com/coches-de-segunda-mano-en-{region}/?fromSearch={page}&orden=date
     Where:
         - province is a string validated by the function validate_region()
         - page is the number of page result to be requested
@@ -46,10 +46,10 @@ class MilanunciosScraper:
 
         dataset = pd.DataFrame()
         for page_number in range(fp, tp+1): # TODO generator that return the next page number depending on fp and tp
-            page_content = self._request_page_content(region, page_number)
+            articles = self._request_page_articles(region, page_number)
 
-            if page_content:
-                cars = self._extract_all_cars_data(page_content)
+            if len(articles) > 0:
+                cars = self._extract_all_cars_data(articles)
                 dataset = pd.concat([dataset, pd.DataFrame(cars)])
                 dataset['region'] = region
 
@@ -77,16 +77,18 @@ class MilanunciosScraper:
 
     def _close_session(self):
         click.secho(f"Closing chrome session", fg='green')
-        time.sleep(10)
         self.browser.quit()
 
-    def _request_page_content(self, region, page_number):
-        url = f"https://www.milanuncios.com/coches-de-segunda-mano-en-{region}/?pagina={page_number}&orden=date&results=5"
+    def _request_page_articles(self, region, page_number):
+        url = f"https://www.milanuncios.com/coches-de-segunda-mano-en-{region}/?pagina={page_number}&orden=date"
         
         initial_time = time.time()
 
+        articles = []
+
         self.browser.get(url)
-        self._scroll(2)
+
+        articles = self._scroll_and_extract_articles(2)
 
         self._response_delay = time.time() - initial_time
 
@@ -94,36 +96,44 @@ class MilanunciosScraper:
 
         #time.sleep(self._response_delay*self.DELAY_RATIO) TODO revisar espaciado
 
-        return self.browser.page_source
+        return articles
 
-    def _scroll(self, timeout):
+    def _scroll_and_extract_articles(self, timeout):
         scroll_pause_time = timeout
 
-        last_height = self.browser.execute_script("return document.body.scrollHeight")
+        last_height = self.browser.execute_script("return document.body.scrollHeight*0.80")
+        
+        articles = self._obtain_current_articles_on_browser()
 
         while True:
-            self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight*0.80);")
             time.sleep(scroll_pause_time)
+            
+            articles.extend(self._obtain_current_articles_on_browser())
 
-            new_height = self.browser.execute_script("return document.body.scrollHeight")
+            new_height = self.browser.execute_script("return document.body.scrollHeight*0.80")
             if new_height == last_height:
                 break
 
             last_height = new_height
 
+        return articles
 
-    def _extract_all_cars_data(self, page_content: str) -> list:
-        """Parses the page_content and returns a list of dict with car features
+    def _obtain_current_articles_on_browser(self):
+        page_content = self.browser.page_source
+        soup = BeautifulSoup(page_content, 'html.parser')
+
+        return soup.find_all('article', {'class' : 'ma-AdCard'})
+
+    def _extract_all_cars_data(self, articles: list) -> list:
+        """Parses the list of articles and returns a list of dict with car features
 
         :param page_content: list with extracted articles
         :return: ditc with f
         """
+
         result = []
-
-        soup = BeautifulSoup(page_content, 'html.parser')
-
-        articles = soup.find_all('article', {'class' : 'ma-AdCard'})
-        print(len(articles))
+       
         for article in articles:
             car_record = self._extract_cars_record(article)
 
@@ -194,4 +204,4 @@ class MilanunciosScraper:
             'segovia', 'sevilla', 'soria', 'tarragona', 'tenerife', 'teruel',
             'toledo', 'valencia', 'comunidad_valenciana', 'valladolid', 'vizcaya',
             'zamora', 'zaragoza'
-        ]        
+        ]
