@@ -19,7 +19,6 @@ def car_scraper(output_file, fp, tp, region):
     milanuncios_scraper = MilanunciosScraper()
     milanuncios_scraper.scrap(output_file, fp, tp, region)
 
-
 class MilanunciosScraper:
     """ Class to scrap vehicle ads from https://www.milanuncios.com/coches-de-segunda-mano-en-{region}/?fromSearch={page}&orden=date
     Where:
@@ -166,7 +165,7 @@ class MilanunciosScraper:
             car_price = car_price.replace('.', '').replace('€', '')
         advertizer_type = self._get_text(price_section, 'span', 'ma-AdTag-label', default=None)
 
-        image_url = article.find('img', 'ma-AdCard-photo').get('src')
+        image_url = article.find('img', 'ma-AdCard-photo').get('src') if article.find('img', 'ma-AdCard-photo') else ""
 
         return {
             'ad_id': ad_id,
