@@ -11,13 +11,15 @@ from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver import ActionChains
+
 
 def car_scraper(output_file, fp, tp, region):
     milanuncios_scraper = MilanunciosScraper()
     milanuncios_scraper.scrap(output_file, fp, tp, region)
+
 
 class MilanunciosScraper:
     """ Class to scrap vehicle ads from https://www.milanuncios.com/coches-de-segunda-mano-en-{region}/?fromSearch={page}&orden=date
@@ -26,17 +28,13 @@ class MilanunciosScraper:
         - page is the number of page result to be requested
     """
 
-    DELAY_RATIO = 10 # Number of times that it waits depending on the response time for the next requests
-
-    def __init__(self, executable_path = "brand_car_scraper/chromedriver", log_path="chromedriver.log"):
+    def __init__(self, executable_path="brand_car_scraper/chromedriver", log_path="chromedriver.log"):
         self._response_delay = 0.5
         self._executable_path = executable_path
 
     def scrap(self, output_file, fp, tp, region):
-        fp = 1 if not fp else fp
-        tp = 1 if not tp else tp # TODO if tp is None tp shoucld be equal to total number of pages
-
-        self._start_session()
+        self.current_page = 1 if not fp else fp
+        self.max_page = tp
 
         if not self._validate_region(region):
             click.secho(f"Not valid region name error: {region}", fg='red')
@@ -44,111 +42,87 @@ class MilanunciosScraper:
             return
 
         dataset = pd.DataFrame()
-        for page_number in range(fp, tp+1): # TODO generator that return the next page number depending on fp and tp
-            articles = self._request_page_articles(region, page_number)
+        with SeleniumBrowser() as sb:
+            for page_number in self._pages_to_scrap():
+                click.echo(page_number)
+                page_content = sb.read(self._get_url(region, page_number))
 
-            if len(articles) > 0:
-                cars = self._extract_all_cars_data(articles)
-                dataset = pd.concat([dataset, pd.DataFrame(cars)])
-                dataset['region'] = region
+                if page_content:
+                    parser = MilAnunciosPageParser(page_content)
+                    self._update_max_page(parser)
+
+                    records = parser.get_records()
+                    if len(records) > 0:
+                        dataset = pd.concat([dataset, pd.DataFrame(records)])
+                        dataset['region'] = region
 
         dataset.to_csv(output_file)
 
-        self._close_session()
+    def _get_url(self, region, page_number):
+        return f"https://www.milanuncios.com/coches-de-segunda-mano-en-{region}/?pagina={page_number}&orden=date"
+
+    def _pages_to_scrap(self):
+        while True:
+            if self.max_page and self.current_page > self.max_page:
+                break
+            yield self.current_page
+            self.current_page += 1
+
+    def _update_max_page(self, page_parser):
+        if not self.max_page and page_parser:
+            self.max_page = page_parser.get_total_number_of_pages()
 
     def _validate_region(self, region):
         return region.lower() in self.regions
 
-    def _start_session(self):
-        self.session = uuid4()
-        click.secho(f"Starting chrome session", fg='green')
+    @property
+    def regions(self):
+        return [
+            'alava', 'albacete', 'alicante', 'almeria', 'andalucia', 'aragon',
+            'asturias', 'avila', 'badajoz', 'baleares', 'barcelona', 'burgos',
+            'caceres', 'cadiz', 'cantabria', 'canarias', 'castellon',
+            'castilla_la_mancha', 'castilla_y_leon', 'catalunya', 'ceuta',
+            'ciudad_real', 'cordoba', 'cuenca', 'extremadura', 'galicia',
+            'girona', 'granada', 'guadalajara', 'guipuzcoa', 'huelva',
+            'huesca', 'jaen', 'la_coruna', 'la_rioja', 'las_palmas', 'leon',
+            'lleida', 'lugo', 'madrid', 'malaga', 'melilla', 'murcia', 'navarra',
+            'ourense', 'pais_vasco', 'palencia', 'pontevedra', 'salamanca',
+            'segovia', 'sevilla', 'soria', 'tarragona', 'tenerife', 'teruel',
+            'toledo', 'valencia', 'comunidad_valenciana', 'valladolid', 'vizcaya',
+            'zamora', 'zaragoza'
+        ]
 
-        options = Options()
-        options.add_argument('start-maximized')
-        options.add_argument('disable-infobars')
-        options.add_argument('--disable-extensions')
 
-        self.browser = webdriver.Chrome(chrome_options = options, executable_path = self._executable_path)
+class MilAnunciosPageParser:
+    def __init__(self, page_content):
+        self.soup = BeautifulSoup(page_content, 'html.parser')
 
-        self.browser.get("https://www.milanuncios.com/coches-de-segunda-mano-en-{region}/")
+    def get_records(self):
+        return self._extract_all_cars_data(self.soup.find_all('article', {'class': 'ma-AdCard'}))
 
-        time.sleep(5)
-
-    def _close_session(self):
-        click.secho(f"Closing chrome session", fg='green')
-        self.browser.quit()
-
-    def _request_page_articles(self, region, page_number):
-        url = f"https://www.milanuncios.com/coches-de-segunda-mano-en-{region}/?pagina={page_number}&orden=date"
-        
-        initial_time = time.time()
-
-        articles = []
-
-        self.browser.get(url)
-
-        articles = self._scroll_and_extract_articles(2)
-
-        self._response_delay = time.time() - initial_time
-
-        click.secho(f"The delay was {self._response_delay}")
-
-        #time.sleep(self._response_delay*self.DELAY_RATIO) TODO revisar espaciado
-
-        return articles
-
-    def _scroll_and_extract_articles(self, timeout):
-        scroll_pause_time = timeout
-
-        last_height = self.browser.execute_script("return document.body.scrollHeight*0.80")
-        
-        articles = self._obtain_current_articles_on_browser()
-
-        while True:
-            self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight*0.80);")
-            time.sleep(scroll_pause_time)
-            
-            articles.extend(self._obtain_current_articles_on_browser())
-
-            new_height = self.browser.execute_script("return document.body.scrollHeight*0.80")
-            if new_height == last_height:
-                break
-
-            last_height = new_height
-
-        return articles
-
-    def _obtain_current_articles_on_browser(self):
-        page_content = self.browser.page_source
-        soup = BeautifulSoup(page_content, 'html.parser')
-
-        return soup.find_all('article', {'class' : 'ma-AdCard'})
+    def get_total_number_of_pages(self):
+        result = None
+        div = self.soup.find('div', 'ma-NavigationPagination-pagesContainer')
+        if div:
+            total_page = div.find('span', 'ma-ButtonBasic-content')
+            result = int(total_page)
+            click.secho(f"Total number of paged found: {result}", fg='green')
+        return result
 
     def _extract_all_cars_data(self, articles: list) -> list:
-        """Parses the list of articles and returns a list of dict with car features
-
-        :param page_content: list with extracted articles
-        :return: ditc with f
-        """
-
         result = []
-       
         for article in articles:
             car_record = self._extract_cars_record(article)
-
-            if car_record == None:
+            if car_record is None:
                 continue
-            
             result.append(car_record)
-        
         return result
 
     def _extract_cars_record(self, article) -> dict:
         ad_type = self._get_text(article, 'p', 'ma-AdCard-sellType', default=None)
-        
+
         if ad_type.upper() != "OFERTA":
             return None
-
 
         ad_id = self._get_text(article, 'p', 'ma-AdCard-adId', default=None)
         ad_time = self._get_text(article, 'p', 'ma-AdCard-time', default=None)
@@ -157,7 +131,7 @@ class MilanunciosScraper:
         car_desc = self._get_text(article, 'p', 'ma-AdCard-text', default=None)
 
         car_km, car_year, car_engine_type, car_door_num, car_power = [
-            p.text for p in article.find('ul', 'ma-AdTagList').find_all('span','ma-AdTag-label')]
+            p.text for p in article.find('ul', 'ma-AdTagList').find_all('span', 'ma-AdTag-label')]
 
         price_section = article.find('div', 'ma-AdCard-metadataActions')
         car_price = self._get_text(price_section, 'span', 'ma-AdCard-price', default=None)
@@ -188,19 +162,56 @@ class MilanunciosScraper:
         result = article.find(name, attrs)
         return result.text if result else default
 
-    @property
-    def regions(self):
-        return [
-            'alava', 'albacete', 'alicante', 'almeria', 'andalucia', 'aragon',
-            'asturias', 'avila', 'badajoz', 'baleares', 'barcelona', 'burgos',
-            'caceres', 'cadiz', 'cantabria', 'canarias', 'castellon',
-            'castilla_la_mancha', 'castilla_y_leon', 'catalunya', 'ceuta',
-            'ciudad_real', 'cordoba', 'cuenca', 'extremadura', 'galicia',
-            'girona', 'granada', 'guadalajara', 'guipuzcoa', 'huelva',
-            'huesca', 'jaen', 'la_coruna', 'la_rioja', 'las_palmas', 'leon',
-            'lleida', 'lugo', 'madrid', 'malaga', 'melilla', 'murcia', 'navarra',
-            'ourense', 'pais_vasco', 'palencia', 'pontevedra', 'salamanca',
-            'segovia', 'sevilla', 'soria', 'tarragona', 'tenerife', 'teruel',
-            'toledo', 'valencia', 'comunidad_valenciana', 'valladolid', 'vizcaya',
-            'zamora', 'zaragoza'
-        ]
+
+class SeleniumBrowser:
+    MAX_SCROLLS = 100
+
+    def __init__(self, load_page_timeout=5, scroll_pause_time=2):
+        self.load_page_timeout = load_page_timeout
+        self.scroll_pause_time = scroll_pause_time
+
+    def __enter__(self):
+        self.session = uuid4()
+        click.secho(f"Starting chrome session", fg='green')
+
+        options = Options()
+        options.add_argument('start-maximized')
+        options.add_argument('disable-infobars')
+        options.add_argument('--disable-extensions')
+
+        self.browser = webdriver.Chrome(chrome_options=options)
+        return self
+
+    def __exit__(self, type, value, traceback):
+        click.secho(f"Closing chrome session", fg='green')
+        self.browser.quit()
+
+    def read(self, url):
+
+        self.browser.get(url)
+        try:
+            WebDriverWait(self.browser, self.load_page_timeout).until(lambda d: d.find_element_by_tag_name("article"))
+        except TimeoutException:
+            click.secho(f"Timed out waiting for page to load: {url}", fg="orange")
+            return None
+
+        scroll_counter = 1
+        while scroll_counter < self.MAX_SCROLLS:
+            ActionChains(self.browser).send_keys(Keys.PAGE_DOWN).perform()
+            time.sleep(self.scroll_pause_time)
+            self._accept_cookies()
+            try:
+                next_page_element = self.browser.find_element_by_class_name("ma-NavigationPagination-nextButton")
+                break
+            except:
+                continue
+
+        return self.browser.page_source
+
+    def _accept_cookies(self):
+        try:
+            buttons = self.browser.find_elements_by_class_name("sui-AtomButton--primary")
+        except:
+            return
+        if buttons:
+            buttons[0].click()
