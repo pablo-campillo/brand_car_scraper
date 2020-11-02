@@ -103,11 +103,12 @@ class MilAnunciosPageParser:
 
     def get_total_number_of_pages(self):
         result = None
-        div = self.soup.find('div', 'ma-NavigationPagination-pagesContainer')
+        div = self.soup.find_all('div', 'ma-NavigationPagination-pagesContainer')
         if div:
-            total_page = div.find('span', 'ma-ButtonBasic-content')
-            result = int(total_page.text)
-            click.secho(f"Total number of paged found: {result}", fg='green')
+            pages = div.find_all('span', 'ma-ButtonBasic-content')
+            if pages:
+                result = int(pages[-1].text)
+                click.secho(f"Total number of paged found: {result}", fg='green')
         return result
 
     def _extract_all_cars_data(self, articles: list) -> list:
