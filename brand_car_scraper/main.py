@@ -71,6 +71,7 @@ class MilanunciosScraper:
     def _update_max_page(self, page_parser):
         if not self.max_page and page_parser:
             self.max_page = page_parser.get_total_number_of_pages()
+            click.secho(f"Number of pages: {self.max_page}", fg="green")
 
     def _validate_region(self, region):
         return region.lower() in self.regions
@@ -105,7 +106,7 @@ class MilAnunciosPageParser:
         div = self.soup.find('div', 'ma-NavigationPagination-pagesContainer')
         if div:
             total_page = div.find('span', 'ma-ButtonBasic-content')
-            result = int(total_page)
+            result = int(total_page.text)
             click.secho(f"Total number of paged found: {result}", fg='green')
         return result
 
