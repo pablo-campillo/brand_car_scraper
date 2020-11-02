@@ -103,7 +103,7 @@ class MilAnunciosPageParser:
 
     def get_total_number_of_pages(self):
         result = None
-        div = self.soup.find_all('div', 'ma-NavigationPagination-pagesContainer')
+        div = self.soup.find('div', 'ma-NavigationPagination-pagesContainer')
         if div:
             pages = div.find_all('span', 'ma-ButtonBasic-content')
             if pages:
