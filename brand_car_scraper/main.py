@@ -92,18 +92,15 @@ class MilanunciosScraper:
     @property
     def regions(self):
         return [
-            'alava', 'albacete', 'alicante', 'almeria', 'andalucia', 'aragon',
+            'alava', 'albacete', 'alicante', 'almeria', 'aragon',
             'asturias', 'avila', 'badajoz', 'baleares', 'barcelona', 'burgos',
-            'caceres', 'cadiz', 'cantabria', 'canarias', 'castellon',
-            'castilla_la_mancha', 'castilla_y_leon', 'catalunya', 'ceuta',
-            'ciudad_real', 'cordoba', 'cuenca', 'extremadura', 'galicia',
-            'girona', 'granada', 'guadalajara', 'guipuzcoa', 'huelva',
-            'huesca', 'jaen', 'la_coruna', 'la_rioja', 'las_palmas', 'leon',
+            'caceres', 'cadiz', 'cantabria', 'castellon','ceuta','ciudad_real',
+            'cordoba', 'cuenca','girona', 'granada', 'guadalajara', 'guipuzcoa', 
+            'huelva', 'huesca', 'jaen', 'la_coruna', 'la_rioja', 'las_palmas', 'leon',
             'lleida', 'lugo', 'madrid', 'malaga', 'melilla', 'murcia', 'navarra',
-            'ourense', 'pais_vasco', 'palencia', 'pontevedra', 'salamanca',
-            'segovia', 'sevilla', 'soria', 'tarragona', 'tenerife', 'teruel',
-            'toledo', 'valencia', 'comunidad_valenciana', 'valladolid', 'vizcaya',
-            'zamora', 'zaragoza'
+            'ourense', 'palencia', 'pontevedra', 'salamanca', 'segovia', 'sevilla',
+            'soria', 'tarragona', 'tenerife', 'teruel', 'toledo', 'valencia',
+            'valladolid', 'vizcaya','zamora', 'zaragoza'
         ]
 
 
