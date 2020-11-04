@@ -23,7 +23,7 @@ def car_scraper(output_file, fp, tp, region):
 class MilanunciosScraper:
     """ Class to scrap vehicle ads from https://www.milanuncios.com/coches-de-segunda-mano-en-{region}/?fromSearch={page}&orden=date
     Where:
-        - province is a string validated by the function validate_region()
+        - region is a string validated by the function validate_region()
         - page is the number of page result to be requested
     """
 
@@ -51,10 +51,11 @@ class MilanunciosScraper:
             except TimeoutException as e:
                 click.secho(f"Browser Timeout Exception!", fg="red")
                 continue
-        dataset.to_csv(output_file)
 
     def parse_pages(self, dataset, output_file_path, region):
         with SeleniumBrowser() as sb:
+            must_add_headers = True
+
             for page_number in self._pages_to_scrap():
                 click.echo(page_number)
                 page_content = sb.read(self._get_url(region, page_number))
@@ -67,9 +68,11 @@ class MilanunciosScraper:
                     if len(records) > 0:
                         df = pd.DataFrame(records)
                         df['region'] = region
-                        df.to_csv(output_file_path.parent / f"{page_number:03d}-{output_file_path.name}")
+                        df.to_csv(output_file_path.parent / f"{output_file_path.name}", mode="a", header = must_add_headers)
                         dataset = pd.concat([dataset, pd.DataFrame(records)])
                         dataset['region'] = region
+                        
+                        if must_add_headers: must_add_headers = False
 
     def _get_url(self, region, page_number):
         return f"https://www.milanuncios.com/coches-de-segunda-mano-en-{region}/?pagina={page_number}&orden=date"
@@ -193,7 +196,7 @@ class SeleniumBrowser:
         options.add_argument('disable-infobars')
         options.add_argument('--disable-extensions')
 
-        self.browser = webdriver.Chrome(chrome_options=options)
+        self.browser = webdriver.Chrome(executable_path="brand_car_scraper/chromedriver", chrome_options=options)
         return self
 
     def __exit__(self, type, value, traceback):
