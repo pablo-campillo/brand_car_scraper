@@ -3,8 +3,6 @@ import time
 import pandas as pd
 import click
 
-from pyvirtualdisplay import Display
-from selenium import webdriver
 from uuid import uuid4
 from datetime import datetime
 
@@ -14,6 +12,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
+from pathlib import Path
 
 
 def car_scraper(output_file, fp, tp, region):
@@ -33,6 +32,8 @@ class MilanunciosScraper:
         self._executable_path = executable_path
 
     def scrap(self, output_file, fp, tp, region):
+        output_file_path = Path(output_file)
+
         self.current_page = 1 if not fp else fp
         self.max_page = tp
 
@@ -42,6 +43,17 @@ class MilanunciosScraper:
             return
 
         dataset = pd.DataFrame()
+
+        while True:
+            try:
+                self.parse_pages(dataset, output_file_path, region)
+                break
+            except TimeoutException as e:
+                click.secho(f"Browser Timeout Exception!", fg="red")
+                continue
+        dataset.to_csv(output_file)
+
+    def parse_pages(self, dataset, output_file_path, region):
         with SeleniumBrowser() as sb:
             for page_number in self._pages_to_scrap():
                 click.echo(page_number)
@@ -53,10 +65,11 @@ class MilanunciosScraper:
 
                     records = parser.get_records()
                     if len(records) > 0:
+                        df = pd.DataFrame(records)
+                        df['region'] = region
+                        df.to_csv(output_file_path.parent / f"{page_number:03d}-{output_file_path.name}")
                         dataset = pd.concat([dataset, pd.DataFrame(records)])
                         dataset['region'] = region
-
-        dataset.to_csv(output_file)
 
     def _get_url(self, region, page_number):
         return f"https://www.milanuncios.com/coches-de-segunda-mano-en-{region}/?pagina={page_number}&orden=date"
@@ -132,8 +145,10 @@ class MilAnunciosPageParser:
         ad_title = self._get_text(article, 'h3', 'ma-AdCard-bodyTitle', default=None)
         car_desc = self._get_text(article, 'p', 'ma-AdCard-text', default=None)
 
-        car_km, car_year, car_engine_type, car_door_num, car_power = [
-            p.text for p in article.find('ul', 'ma-AdTagList').find_all('span', 'ma-AdTag-label')]
+        fields = [p.text for p in article.find('ul', 'ma-AdTagList').find_all('span', 'ma-AdTag-label')]
+        if len(fields) != 5:
+            return None
+        car_km, car_year, car_engine_type, car_door_num, car_power = fields
 
         price_section = article.find('div', 'ma-AdCard-metadataActions')
         car_price = self._get_text(price_section, 'span', 'ma-AdCard-price', default=None)
@@ -168,7 +183,7 @@ class MilAnunciosPageParser:
 class SeleniumBrowser:
     MAX_SCROLLS = 100
 
-    def __init__(self, load_page_timeout=5, scroll_pause_time=2):
+    def __init__(self, load_page_timeout=5, scroll_pause_time=1):
         self.load_page_timeout = load_page_timeout
         self.scroll_pause_time = scroll_pause_time
 
@@ -194,7 +209,7 @@ class SeleniumBrowser:
         try:
             WebDriverWait(self.browser, self.load_page_timeout).until(lambda d: d.find_element_by_tag_name("article"))
         except TimeoutException:
-            click.secho(f"Timed out waiting for page to load: {url}", fg="orange")
+            click.secho(f"Timed out waiting for page to load: {url}", fg="red")
             return None
 
         scroll_counter = 1
