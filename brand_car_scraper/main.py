@@ -95,7 +95,7 @@ class MilanunciosScraper:
     @property
     def regions(self):
         return [
-            'alava', 'albacete', 'alicante', 'almeria', 'aragon',
+            'alava', 'albacete', 'alicante', 'almeria',
             'asturias', 'avila', 'badajoz', 'baleares', 'barcelona', 'burgos',
             'caceres', 'cadiz', 'cantabria', 'castellon','ceuta','ciudad_real',
             'cordoba', 'cuenca','girona', 'granada', 'guadalajara', 'guipuzcoa', 
