@@ -43,7 +43,7 @@ $ python setup.py install
 ```
 
 
-# Ejecución
+### Ejecución
 
 Tal y como se presenta a continuación, se puede ejecutar el script de las siguientes maneras:
 
@@ -88,7 +88,7 @@ $ scrap -fp 5 -tp 10 --region murcia out.csv
 ```
 Dará lugar a un fichero out.csv con los datos de las páginas 5,6,7,8,9 y 10 del listado de coches de segunda mano a la venta en Murcia.
 
-# Entorno de desarrollo
+### Entorno de desarrollo
 
 Crear un entorno virtual:
 ```bash
