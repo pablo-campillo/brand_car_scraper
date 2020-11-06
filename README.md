@@ -11,8 +11,12 @@ Durante la misma, se ha desarrollado una herramienta que permite obtener datos s
 - Pablo Campillo Sánchez
 - Pedro Uceda Martínez
 
-## Memoria de la práctica
+## Ficheros
+### Memoria de la práctica
 Se puede leer el fichero PDF https://github.com/pablo-campillo/brand_car_scraper/blob/main/memoria/memoria.pdf
+### Código
+Ya desde la raíz del repositorio se puede ver código, pero la lógica principal se encuentra en https://github.com/pablo-campillo/brand_car_scraper/blob/main/brand_car_scraper/main.py
+
 
 ## Conjunto de datos
 
