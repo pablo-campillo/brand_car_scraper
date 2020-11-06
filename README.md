@@ -1,5 +1,7 @@
 # Práctica 1: Web Scraping
 
+![alt text](https://github.com/pablo-campillo/brand_car_scraper/blob/main/memoria/features.png)
+
 ## Descripción
 En este repositorio se presenta el material realizado bajo el contexto de la Práctica 1 de la asignatura 'Tipología y Ciclo de Vida de los Datos' del Máster en Ciencia de Datos de la Universitat Oberta de Catalunya.
 
