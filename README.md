@@ -30,25 +30,31 @@ El conjunto de datos que genera la herramienta se sitúa en un fichero de salida
 - **region**: Provincia en la que se está vendiendo el vehículo.
     
 
-# Content
+## Uso de la herramienta
 
-# Instalación
+### Prerequisitos
+Es necesario **tener instalado el driver correspondiente a tu navegador para Selenium**: https://www.selenium.dev/downloads/, preferiblemente para Google Chrome.
 
-Desde el directorio raíz:
+### Instalación
+
+Desde el directorio raíz se ha de ejecutar el siguiente comando:
 ```
 $ python setup.py install
 ```
 
-Es necesario instalar el driver correspondiente a tu navegador para selenium: https://www.selenium.dev/downloads/
 
-# Uso
+# Ejecución
+
+Tal y como se presenta a continuación, se puede ejecutar el script de las siguientes maneras:
 
 ```bash
 Usage: scrap [OPTIONS] OUTPUT_FILE
 
-  This tool scraps list of second car ads on https://www.milanuncios.com/coches-de-segunda-mano-en-<province>/?orden=relevance&fromSearch=<page_number> where <region> is the name of a region in Spain (madrid, andalucia, murcia) and <page_number> is an integer greater or equal than 1. By searching for cars by regions we are able to save where they are being sold.
+  This tool scraps list of second hand car ads on https://www.milanuncios.com/coches-de-segunda-mano-en-<province>/?orden=relevance&fromSearch=<page_number> where <region> is the name of a region (province) in Spain (madrid, sevilla, murcia) and <page_number> is an integer greater or equal than 1. By searching for cars by regions we are able to save where they are being sold.
 
   If no OPTIONS are provided all the pages will be parsed.
+  
+  If no region is provided, madrid will be selected by default.
 
   OUTPUT_FILE a path where the csv file will be stored.
 
@@ -76,6 +82,11 @@ Options:
   --help         Show this message and exit.
   
 ```
+Así, la ejecución del siguiente comando: 
+```
+$ scrap -fp 5 -tp 10 --region murcia out.csv
+```
+Dará lugar a un fichero out.csv con los datos de las páginas 5,6,7,8,9 y 10 del listado de coches de segunda mano a la venta en Murcia.
 
 # Entorno de desarrollo
 
@@ -84,12 +95,12 @@ Crear un entorno virtual:
 $ python3 -m venv <env_directory> python=3.8
 ```
 
-Activar el entonro:
+Activar el entorno:
 ```bash
 $ source <env_directory>/bin/activate
 ```
 
-Instalar las librerías y sus dependencias como referencia al directorio:
+Instalar las librerías y sus dependencias como referencia al directorio, si fuera necesario:
 ```bash
 $ python setup.py develop
 ```
