@@ -1,30 +1,34 @@
-# Introducción
-Herramienta para obtener características de anuncios de coches publicados en www.milanuncios.com con fines totalmente académicos.
+# Práctica 1: Web Scraping
 
-La herramienta se ha desarrollado en el contexto de una práctica de la asignatura 'Tipología y ciclo de vida de los datos' 
-del Máster Ciencia de Datos de la www.ouc.edu.
+## Descripción
+En este repositorio se presenta el material realizado bajo el contexto de la Práctica 1 de la asignatura 'Tipología y Ciclo de Vida de los Datos' del Máster en Ciencia de Datos de la Universitat Oberta de Catalunya.
+
+Durante la misma, se ha desarrollado una herramienta que permite obtener datos sobre anuncios de coches publciados en www.milanuncios.com utilizando técnicas de __web scraping__ haciendo uso del lenguaje de programación Python, su libraría Beautiful Soup y Selenium. 
+
+## Componentes del equipo
+- Pablo Campillo Sánchez
+- Pedro Uceda Martínez
 
 ## Conjunto de datos
-El conjunto de datos que genera es un csv con las siguientes características:
-- ad_id: Identificador del anuncio del coche.
-- ad_type: Tipo de anuncio. Será simpre "Oferta".
-- ad_time: Tiempo que llevaba publicado el anuncio cuando se recogió la información, en formato X horas o X días. En el caso en que fuese un anuncio destacado, no tenemos esa información.
-- ad_title: Título del anuncio de venta, con formato {Marca} – {Modelo}
-- car_desc: Descripción (parte de la misma) del vehículo.
-- car_km: Kilómetros que tiene recorridos el coche
-- car_year: Año de matriculación del vehículo
-- car_engine_type: Tipo de transmisión. Posibles valores: Manual | Automático.
-- car_door_num: Número de puertas de las que dispone el coche
-- car_power: Potencia del vehículo, en formato XXX CV
-- car_price: Precio en euros por el que se vende el coche
-- advertizer_type: Profesional o Particular
-- image_url: Foto principal del anuncio de venta del coche
-- ts: Fecha y hora en la que se recogió la información, con formato YYYY-MM-DD hh:mm:ss.ms
-- region: Region española a la que pertenece el vehículo
 
-# Equipo
-- Pedro Uceda Martinez
-- Pablo Campillo Sánchez
+El conjunto de datos que genera la herramienta se sitúa en un fichero de salida .CSV con las siguientes características:
+
+- **ad_id**: Identificador del anuncio del coche.
+- **ad_type**: Tipo de anuncio. En nuestro caso, siempre va a ser Oferta.
+- **ad_time**: Tiempo que llevaba publicado el anuncio cuando se recogió la información, en formato X horas o X días. En el caso en que fuese un anuncio destacado, no tenemos esa información.
+- **ad_title**: Título del anuncio de venta, con formato {Marca} – {Modelo}.
+- **car_desc**: Preview de la descripción del anuncio de venta del vehículo.
+- **car_km**: Kilómetros que tiene recorridos el coche.
+- **car_year**: Año de matriculación del vehículo.
+- **car_engine_type**: Tipo de transmisión. Posibles valores: Manual | Automático.
+- **car_door_num**: Número de puertas de las que dispone el coche.
+- **car_power**: Potencia del vehículo, en formato XXX CV.
+- **car_price**: Precio en euros por el que se vende el coche.
+- **advertizer_type**: Indica cuál es el tipo de vendedor del vehículo. Valores posibles: Profesional | Particular.
+- **image_url**: Foto principal del anuncio de venta del coche.
+- **ts**: Hora en la que se recogió la información, con formato YYYY-MM-DD hh:mm:ss.ms.
+- **region**: Provincia en la que se está vendiendo el vehículo.
+    
 
 # Content
 
