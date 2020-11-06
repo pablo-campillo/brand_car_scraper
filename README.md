@@ -1,5 +1,7 @@
 # Práctica 1: Web Scraping
 
+![alt text](https://github.com/pablo-campillo/brand_car_scraper/blob/main/memoria/features.png)
+
 ## Descripción
 En este repositorio se presenta el material realizado bajo el contexto de la Práctica 1 de la asignatura 'Tipología y Ciclo de Vida de los Datos' del Máster en Ciencia de Datos de la Universitat Oberta de Catalunya.
 
@@ -8,6 +10,9 @@ Durante la misma, se ha desarrollado una herramienta que permite obtener datos s
 ## Componentes del equipo
 - Pablo Campillo Sánchez
 - Pedro Uceda Martínez
+
+## Memoria de la práctica
+Se puede leer el fichero PDF <completar>
 
 ## Conjunto de datos
 
@@ -29,6 +34,7 @@ El conjunto de datos que genera la herramienta se sitúa en un fichero de salida
 - **ts**: Hora en la que se recogió la información, con formato YYYY-MM-DD hh:mm:ss.ms.
 - **region**: Provincia en la que se está vendiendo el vehículo.
     
+Se pueden encontrar los datos extraídos a día 6 de Noviembre de 2020 en https://zenodo.org/record/4252636#.X6W7THX0lhE.
 
 ## Uso de la herramienta
 
@@ -41,7 +47,6 @@ Desde el directorio raíz se ha de ejecutar el siguiente comando:
 ```
 $ python setup.py install
 ```
-
 
 ### Ejecución
 
