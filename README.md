@@ -12,7 +12,7 @@ Durante la misma, se ha desarrollado una herramienta que permite obtener datos s
 - Pedro Uceda Martínez
 
 ## Memoria de la práctica
-Se puede leer el fichero PDF <completar>
+Se puede leer el fichero PDF https://github.com/pablo-campillo/brand_car_scraper/blob/main/memoria/memoria.pdf
 
 ## Conjunto de datos
 
