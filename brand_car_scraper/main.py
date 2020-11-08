@@ -42,17 +42,16 @@ class MilanunciosScraper:
             click.secho(f"Valid region names: {self.regions}", fg='red')
             return
 
-        dataset = pd.DataFrame()
-
         while True:
             try:
-                self.parse_pages(dataset, output_file_path, region)
+                self.parse_pages(output_file_path, region)
                 break
             except TimeoutException as e:
                 click.secho(f"Browser Timeout Exception!", fg="red")
+                self.current_page -= 1
                 continue
 
-    def parse_pages(self, dataset, output_file_path, region):
+    def parse_pages(self, output_file_path, region):
         with SeleniumBrowser() as sb:
             must_add_headers = True
 
@@ -69,8 +68,6 @@ class MilanunciosScraper:
                         df = pd.DataFrame(records)
                         df['region'] = region
                         df.to_csv(output_file_path.parent / f"{output_file_path.name}", mode="a", header = must_add_headers)
-                        dataset = pd.concat([dataset, pd.DataFrame(records)])
-                        dataset['region'] = region
                         
                         if must_add_headers: must_add_headers = False
 
@@ -218,7 +215,7 @@ class SeleniumBrowser:
             time.sleep(self.scroll_pause_time)
             self._accept_cookies()
             try:
-                next_page_element = self.browser.find_element_by_class_name("ma-NavigationPagination-nextButton")
+                self.browser.find_element_by_class_name("ma-NavigationPagination-nextButton")
                 break
             except:
                 continue
