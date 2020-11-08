@@ -27,9 +27,8 @@ class MilanunciosScraper:
         - page is the number of page result to be requested
     """
 
-    def __init__(self, executable_path="brand_car_scraper/chromedriver", log_path="chromedriver.log"):
+    def __init__(self):
         self._response_delay = 0.5
-        self._executable_path = executable_path
 
     def scrap(self, output_file, fp, tp, region):
         output_file_path = Path(output_file)
@@ -193,7 +192,7 @@ class SeleniumBrowser:
         options.add_argument('disable-infobars')
         options.add_argument('--disable-extensions')
 
-        self.browser = webdriver.Chrome(executable_path="brand_car_scraper/chromedriver", chrome_options=options)
+        self.browser = webdriver.Chrome(chrome_options=options)
         return self
 
     def __exit__(self, type, value, traceback):
