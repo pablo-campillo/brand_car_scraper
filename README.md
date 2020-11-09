@@ -5,7 +5,7 @@
 ## Descripción
 En este repositorio se presenta el material realizado bajo el contexto de la Práctica 1 de la asignatura 'Tipología y Ciclo de Vida de los Datos' del Máster en Ciencia de Datos de la Universitat Oberta de Catalunya.
 
-Durante la misma, se ha desarrollado una herramienta que permite obtener datos sobre anuncios de coches publciados en www.milanuncios.com utilizando técnicas de __web scraping__ haciendo uso del lenguaje de programación Python, su libraría Beautiful Soup y Selenium. 
+Durante la misma, se ha desarrollado una herramienta que permite obtener datos sobre anuncios de coches publicados en www.milanuncios.com utilizando técnicas de __web scraping__ haciendo uso del lenguaje de programación Python, su libraría Beautiful Soup y Selenium. 
 
 ## Componentes del equipo
 - Pablo Campillo Sánchez
